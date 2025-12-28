@@ -35,12 +35,11 @@ resource "google_sql_database" "n8n" {
 }
 
 resource "google_sql_user" "n8n" {
-  name     = "n8n-user"
-  instance = google_sql_database_instance.n8n.name
-  password_wo = random_password.db_password.result
+  name                = "n8n-user"
+  instance            = google_sql_database_instance.n8n.name
+  password_wo         = ephemeral.random_password.db_password.result
   password_wo_version = 1
 }
-
 
 
 
