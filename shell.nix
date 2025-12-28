@@ -5,6 +5,8 @@ let
 in
 pkgs.mkShell {
   packages = with pkgs; [
+
+    opentofu
     google-cloud-sdk
   ];
 }
