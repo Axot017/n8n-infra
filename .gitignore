@@ -1,0 +1,6 @@
+.direnv/
+
+*.env
+!.template.env
+
+**/.terraform/
