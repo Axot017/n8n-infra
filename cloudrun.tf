@@ -5,13 +5,15 @@ resource "google_cloud_run_v2_service" "n8n" {
 
   deletion_protection = false
 
+
+  scaling {
+    min_instance_count = 0
+    max_instance_count = 1
+  }
+
   template {
     service_account = google_service_account.n8n.email
 
-    scaling {
-      min_instance_count = 0
-      max_instance_count = 1
-    }
 
     volumes {
       name = "cloudsql"
@@ -34,7 +36,7 @@ resource "google_cloud_run_v2_service" "n8n" {
           cpu    = var.cloud_run_cpu
           memory = var.cloud_run_memory
         }
-        cpu_idle = true
+        cpu_idle = false
       }
 
       env {
@@ -44,6 +46,19 @@ resource "google_cloud_run_v2_service" "n8n" {
       env {
         name  = "N8N_PROTOCOL"
         value = "https"
+      }
+
+      env {
+        name  = "N8N_HOST"
+        value = var.n8n_domain
+      }
+      env {
+        name  = "WEBHOOK_URL"
+        value = local.n8n_url
+      }
+      env {
+        name  = "N8N_EDITOR_BASE_URL"
+        value = local.n8n_url
       }
       env {
         name  = "GENERIC_TIMEZONE"
@@ -80,11 +95,28 @@ resource "google_cloud_run_v2_service" "n8n" {
       }
 
       env {
+        name  = "DB_POSTGRESDB_POOL_SIZE"
+        value = "10"
+      }
+      env {
+        name  = "DB_POSTGRESDB_CONNECTION_TIMEOUT"
+        value = "60000"
+      }
+      env {
+        name  = "DB_POSTGRESDB_IDLE_TIMEOUT"
+        value = "30000"
+      }
+      env {
+        name  = "DB_POSTGRESDB_ACQUIRE_TIMEOUT"
+        value = "60000"
+      }
+
+      env {
         name = "DB_POSTGRESDB_PASSWORD"
         value_source {
           secret_key_ref {
             secret  = google_secret_manager_secret.db_password.secret_id
-            version = "latest"
+            version = local.db_password_version
           }
         }
       }
@@ -93,7 +125,7 @@ resource "google_cloud_run_v2_service" "n8n" {
         value_source {
           secret_key_ref {
             secret  = google_secret_manager_secret.encryption_key.secret_id
-            version = "latest"
+            version = local.encryption_key_version
           }
         }
       }
@@ -129,3 +161,21 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+resource "google_cloud_run_domain_mapping" "n8n" {
+  name     = var.n8n_domain
+  location = var.region
+
+  metadata {
+    namespace = var.project_id
+  }
+
+  spec {
+    route_name = google_cloud_run_v2_service.n8n.name
+  }
+
+  depends_on = [
+    google_cloud_run_v2_service.n8n
+  ]
+}
+
