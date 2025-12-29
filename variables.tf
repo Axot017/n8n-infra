@@ -40,3 +40,22 @@ variable "db_disk_size" {
   default     = 10
 }
 
+variable "cloudflare_zone_id" {
+  description = "Cloudflare Zone ID for your domain"
+  type        = string
+}
+
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token with DNS edit permissions"
+  type        = string
+  sensitive   = true
+}
+
+variable "n8n_domain" {
+  description = "Custom domain for n8n"
+  type        = string
+}
+
+locals {
+  n8n_url = "https://${var.n8n_domain}"
+}

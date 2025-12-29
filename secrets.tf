@@ -1,3 +1,8 @@
+locals {
+  db_password_version    = 2
+  encryption_key_version = 2
+}
+
 ephemeral "random_password" "db_password" {
   length  = 32
   special = false
@@ -21,7 +26,7 @@ resource "google_secret_manager_secret" "db_password" {
 resource "google_secret_manager_secret_version" "db_password" {
   secret                 = google_secret_manager_secret.db_password.id
   secret_data_wo         = ephemeral.random_password.db_password.result
-  secret_data_wo_version = 1
+  secret_data_wo_version = local.db_password_version
 }
 
 resource "google_secret_manager_secret" "encryption_key" {
@@ -37,5 +42,5 @@ resource "google_secret_manager_secret" "encryption_key" {
 resource "google_secret_manager_secret_version" "encryption_key" {
   secret                 = google_secret_manager_secret.encryption_key.id
   secret_data_wo         = ephemeral.random_password.encryption_key.result
-  secret_data_wo_version = 1
+  secret_data_wo_version = local.encryption_key_version
 }

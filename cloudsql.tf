@@ -6,6 +6,7 @@ resource "google_sql_database_instance" "n8n" {
   settings {
     tier              = var.db_tier
     availability_type = "ZONAL"
+    edition           = "ENTERPRISE"
     disk_size         = var.db_disk_size
     disk_type         = "PD_HDD"
     disk_autoresize   = false
@@ -38,8 +39,6 @@ resource "google_sql_user" "n8n" {
   name                = "n8n-user"
   instance            = google_sql_database_instance.n8n.name
   password_wo         = ephemeral.random_password.db_password.result
-  password_wo_version = 1
+  password_wo_version = local.db_password_version
 }
-
-
 

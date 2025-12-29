@@ -4,3 +4,5 @@
 !.template.env
 
 **/.terraform/
+
+terraform.tfvars
